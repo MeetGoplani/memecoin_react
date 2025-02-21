@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+out/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log
+
+# Test coverage
+coverage/
+
+# Hardhat files
+cache/
+artifacts/
+
+# Truffle files
+.truffle-config.js
+
+# Blockchain development
+deployments/
+typechain/
+typechain-types/
+
+# Compiled contracts
+*.bin
+*.abi
+
+# Local development chain data
+/chain_data/
+
+# Secrets and private keys
+*.pem
+*.key
+mnemonic.txt
+private-keys.txt

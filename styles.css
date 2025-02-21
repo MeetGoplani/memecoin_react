@@ -1,0 +1,345 @@
+/* General Styles */
+body {
+    background-color: #0d0d0d;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+/* Navbar Styles */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #000000;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+body.dark-mode .navbar {
+    background-color: #1f1f1f;
+}
+
+/* Logo */
+.logo {
+    height: 40px;
+    margin-right: 20px;
+}
+
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background-color: transparent;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #000000;
+    color:white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+body.dark-mode .dropdown-content {
+    background-color: #333;
+}
+
+.dropdown-content a {
+    color: rgb(255, 255, 255);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+body.dark-mode .dropdown-content a {
+    color: white;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+body.dark-mode .dropdown-content a:hover {
+    background-color: #444;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Remove dropdown arrow */
+.dropbtn::after {
+    display: none;
+}
+
+/* Search Bar */
+.search-bar {
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    width: 300px;
+    background-color: #1a1a1a;
+    color: white;
+}
+
+body.dark-mode .search-bar {
+    background-color: #444;
+}
+
+/* Theme Dropdown */
+.navbar-right .dropdown-content {
+    right: 0;
+}
+
+/* Container */
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* Header */
+.header {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* Subtext */
+.subtext {
+    color: #b3b3b3;
+    font-size: 14px;
+}
+
+/* Section Titles */
+.section-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 30px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-title::before,
+.section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: #ffffff50;
+    margin: 0 10px;
+}
+
+/* Selection Boxes */
+.box {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 15px;
+}
+
+.option {
+    background-color: #1a1a1a;
+    padding: 20px 40px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: 0.3s;
+    font-size: 18px;
+}
+
+.option:hover, .selected {
+    border: 2px solid #ffff00;
+}
+
+/* Upload Section */
+.upload-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.upload-box {
+    flex: 1;
+    padding: 20px;
+}
+
+.upload-box label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.upload-area {
+    background-color: #1a1a1a;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    border: 2px dashed #ffffff50;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-area:hover {
+    border-color: #ffff00;
+}
+
+.upload-area img {
+    max-width: 100%;
+    max-height: 100px;
+    display: none;
+    border-radius: 5px;
+}
+
+.upload-area span {
+    display: block;
+    color: white;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.upload-area input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+}
+
+/* Form Inputs */
+.form-container {
+    margin-top: 40px;
+    text-align: left;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.form-group input, 
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    background-color: #1a1a1a;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.form-group textarea {
+    height: 100px;
+    resize: none;
+}
+
+/* URL Input Fields */
+.url-inputs {
+    margin-top: 20px;
+}
+
+.url-inputs .form-group {
+    margin-bottom: 15px;
+}
+
+.url-inputs input {
+    width: 100%;
+    padding: 10px;
+    background-color: #1a1a1a;
+    border: 1px solid #ffffff50;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    outline: none;
+}
+
+.url-inputs input:focus {
+    border-color: #ffff00;
+}
+
+/* Wallet Button */
+.wallet-button  {
+    margin-top: 20px;
+    background-color: #ff007a;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+}
+/* Base styles for the button */
+.create-contract-button {
+    margin-top: 20px;
+    background-color: #ff007a;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s ease;
+}
+
+/* Disabled state styles */
+button.create-contract-button:disabled {
+    background-color: #555; /* Gray background */
+    cursor: not-allowed; /* Not-allowed cursor */
+   /* Optional: Make it look faded */
+}
+
+
+.wallet-button:hover {
+    background-color: #d60063;
+}
+
+.wallet-button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+/* Error Messages */
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+}
