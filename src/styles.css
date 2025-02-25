@@ -349,3 +349,10 @@ button.create-contract-button:disabled {
     font-size: 12px;
     margin-top: 5px;
 }
+
+/* Add these styles for the Web3Modal button */
+.w3m-button[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+  }

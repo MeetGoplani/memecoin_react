@@ -1,7 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useAccount, useConnect, useDisconnect } from 'wagmi'
+
+import { useWeb3Modal } from '@web3modal/wagmi/react'
 
 import './styles.css';
 
@@ -42,7 +45,7 @@ const tokenFormSchema = z.object({
 });
 
 function App() {
-  const [selectedChain, setSelectedChain] = useState('Solana');
+  const [selectedChain, setSelectedChain] = useState('mainnet');
   const [selectedDex, setSelectedDex] = useState('Raydium');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
@@ -91,7 +94,7 @@ function App() {
       return;
     }
 
-    const reader = new FileReader();
+  const reader = new FileReader();
     reader.onloadend = () => {
       if (type === 'icon') {
         setIconPreview(reader.result);
@@ -121,25 +124,28 @@ function App() {
     document.body.className = mode === 'dark' ? 'dark-mode' : '';
   };
 
+  // Replace the existing import
+// Move this import to the top of the file with other imports
+
+  const { address, isConnected } = useAccount()
+  const { connect, isLoading: isConnecting } = useConnect()
+  const { disconnect } = useDisconnect()
+
+  // Update the wallet connection handler
   const handleWalletConnect = async () => {
-    if (!isValid || !iconPreview) {
-      alert("Please fill in all required fields and upload an icon.");
+    if (!isValid) {
+      alert("Please fill in all required fields.");
       return;
     }
 
-    if (window.ethereum) {
-      try {
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-        setIsWalletConnected(true);
-        alert("Wallet connected!");
-      } catch (error) {
-        console.error("Connection failed", error);
-        alert("Failed to connect wallet.");
-      }
-    } else {
-      window.open("https://uniswap.org/wallet", "_blank");
+    try {
+      await connect()
+      setIsWalletConnected(true)
+    } catch (error) {
+      console.error("Connection failed", error)
+      alert("Failed to connect wallet.")
     }
-  };
+  }
 
   const onSubmit = async (data) => {
     if (!isWalletConnected) {
@@ -147,10 +153,6 @@ function App() {
       return;
     }
 
-    if (!iconPreview) {
-      alert("Please upload a token icon");
-      return;
-    }
 
     console.log("Creating contract with:", {
       chain: selectedChain,
@@ -162,6 +164,24 @@ function App() {
   };
 
   // Keeping the original navigation layout
+  // Add this effect to watch form validity and icon
+  // Update the useEffect hook
+  useEffect(() => {
+    const element = document.querySelector('w3m-button');
+    if (element) {
+      if (!isValid) {
+        element.setAttribute('disabled', '');
+        element.style.pointerEvents = 'none';
+        element.style.opacity = '0.5';
+      } else {
+        element.removeAttribute('disabled');
+        element.style.pointerEvents = 'auto';
+        element.style.opacity = '1';
+      }
+    }
+  }, [isValid]);
+
+  // Update the button in renderNavbar
   const renderNavbar = () => (
     <nav className="navbar">
       <div className="navbar-left">
@@ -192,21 +212,12 @@ function App() {
         <input type="text" placeholder="Search..." className="search-bar" />
       </div>
       <div className="navbar-right">
-        {/* <div className="dropdown">
-          <button className="dropbtn">Theme</button>
-          <div className="dropdown-content">
-            <a href="#" onClick={() => handleThemeChange('light')}>Light Mode</a>
-            <a href="#" onClick={() => handleThemeChange('dark')}>Dark Mode</a>
-          </div>
-        </div> */}
-        <button 
-          id="uniswap-wallet-btn" 
-          className="wallet-button"
-          onClick={handleWalletConnect}
-          disabled={!isValid || !iconPreview}
-        >
-          {isWalletConnected ? 'Deploy' : 'Connect Uniswap Wallet'}
-        </button>
+        <w3m-button
+          onClick={handleWalletConnect} 
+          balance="show"
+          disabled={!isValid}
+          className="w3m-button"
+        />
       </div>
     </nav>
   );
@@ -224,7 +235,7 @@ function App() {
 
           <div className="section-title">Choose a Chain</div>
           <div className="box" id="chain-box">
-            {['Solana', 'Base', 'Abstract', 'Berachain'].map(chain => (
+            {['mainnet', 'Polygon', 'Arbitrum', 'Optimism'].map(chain => (
               <div
                 key={chain}
                 className={`option ${selectedChain === chain ? 'selected' : ''}`}
@@ -350,62 +361,7 @@ function App() {
             </div>
           </div>
 
-          <div className="section-title">Upload Icon & Banner</div>
-          <div className="upload-container">
-            <div className="upload-box">
-              <label>Icon <span className="required">*</span></label>
-              <div 
-                className="upload-area" 
-                id="icon-upload"
-                onClick={() => handleUploadClick('icon')}
-              >
-                {iconPreview && (
-                  <img
-                    ref={iconPreviewRef}
-                    src={iconPreview}
-                    alt="Icon Preview"
-                    id="icon-preview"
-                  />
-                )}
-                <span>📷 Upload</span>
-                <input
-                  ref={iconInputRef}
-                  type="file"
-                  id="icon-input"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, 'icon')}
-                  style={{ display: 'none' }}
-                />
-              </div>
-            </div>
-
-            <div className="upload-box">
-              <label>Banner</label>
-              <div 
-                className="upload-area" 
-                id="banner-upload"
-                onClick={() => handleUploadClick('banner')}
-              >
-                {bannerPreview && (
-                  <img
-                    ref={bannerPreviewRef}
-                    src={bannerPreview}
-                    alt="Banner Preview"
-                    id="banner-preview"
-                  />
-                )}
-                <span>📷 Upload</span>
-                <input
-                  ref={bannerInputRef}
-                  type="file"
-                  id="banner-input"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, 'banner')}
-                  style={{ display: 'none' }}
-                />
-              </div>
-            </div>
-          </div>
+          
 
           <button 
             type="submit"
