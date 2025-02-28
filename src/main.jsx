@@ -17,13 +17,12 @@ const metadata = {
 
 const chains = [mainnet, polygon, arbitrum, optimism]
 
-// Add custom RPC URLs
-// projectId is already declared above
+// Updated RPC URLs to match chaindata.js
 const rpcUrls = {
-  mainnet: `https://mainnet.infura.io/v3/${projectId}`,
-  polygon: `https://polygon-mainnet.infura.io/v3/${projectId}`,
-  arbitrum: `https://arbitrum-mainnet.infura.io/v3/${projectId}`,
-  optimism: `https://optimism-mainnet.infura.io/v3/${projectId}`
+  mainnet: 'https://eth.llamarpc.com',
+  polygon: 'https://polygon.llamarpc.com',
+  arbitrum: 'https://arbitrum.llamarpc.com',
+  optimism: 'https://mainnet.optimism.io'
 }
 
 const wagmiConfig = defaultWagmiConfig({ 

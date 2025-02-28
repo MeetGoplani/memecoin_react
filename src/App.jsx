@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, use } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
-
+import { useAccount, useConnect, useDisconnect, useEnsName } from 'wagmi'
 import { useWeb3Modal } from '@web3modal/wagmi/react'
+import { ethers } from 'ethers';
+import { switchOrAddChain } from './chaindata';
+
 
 import './styles.css';
 
@@ -44,8 +46,43 @@ const tokenFormSchema = z.object({
     .optional(),
 });
 
+// Add chainMap as a constant at the top level of the App component
 function App() {
-  const [selectedChain, setSelectedChain] = useState('mainnet');
+  const chainMap = {
+    'Ethereum': 1,
+    'Polygon': 137,
+    'Arbitrum': 42161,
+    'Optimism': 10
+  };
+
+  const switchNetwork = async (chain) => {
+    try {
+      const chainId = chainMap[chain];
+      if (!chainId) {
+        alert('Invalid chain selected');
+        return;
+      }
+
+      if (!isConnected) {
+        setSelectedChain(chain);
+        return;
+      }
+
+      await switchOrAddChain(chainId);
+      setSelectedChain(chain);
+      
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const network = await provider.getNetwork();
+      setChainId(parseInt(network.chainId));
+    } catch (error) {
+      console.error('Failed to switch network:', error);
+      alert('Failed to switch network. Please try again.');
+    }
+  };
+
+  // Update initial state to Ethereum
+  const [selectedChain, setSelectedChain] = useState('Ethereum');
+
   const [selectedDex, setSelectedDex] = useState('Raydium');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
@@ -56,7 +93,8 @@ function App() {
   const bannerInputRef = useRef(null);
   const iconPreviewRef = useRef(null);
   const bannerPreviewRef = useRef(null);
-
+  const [chainId, setChainId] = useState(null)
+  console.log(chainId,"ihajsbdajish"); 
   const {
     register,
     handleSubmit,
@@ -132,35 +170,92 @@ function App() {
   const { disconnect } = useDisconnect()
 
   // Update the wallet connection handler
-  const handleWalletConnect = async () => {
-    if (!isValid) {
-      alert("Please fill in all required fields.");
-      return;
-    }
+  // Add this effect to handle initial chain switch after wallet connection
+  useEffect(() => {
+    const handleInitialChainSwitch = async () => {
+      if (isConnected && selectedChain) {
+        try {
+          const chainId = chainMap[selectedChain];
+          await switchOrAddChain(chainId);
+        } catch (error) {
+          console.error('Failed to switch to initial chain:', error);
+        }
+      }
+    };
 
+    handleInitialChainSwitch();
+  }, [isConnected]); // This will run when wallet gets connected
+
+  // Update the handleWalletConnect function
+  const handleWalletConnect = async () => {
     try {
-      await connect()
-      setIsWalletConnected(true)
+      if (!window.ethereum) {
+        alert("Please install MetaMask!");
+        return;
+      }
+
+      try {
+        await window.ethereum.request({
+          method: "eth_requestAccounts"
+        });
+      } catch (requestError) {
+        if (requestError.code === -32002) {
+          alert("Please check MetaMask. A connection request is already pending.");
+          return;
+        }
+        throw requestError;
+      }
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+      setIsWalletConnected(true);
+      
+      // Chain switch will be handled by the useEffect
+      const network = await provider.getNetwork();
+      setChainId(parseInt(network.chainId));
+      
     } catch (error) {
-      console.error("Connection failed", error)
-      alert("Failed to connect wallet.")
+      console.error("Connection failed", error);
+      alert("Failed to connect wallet. Please try again.");
     }
-  }
+  };
 
   const onSubmit = async (data) => {
-    if (!isWalletConnected) {
-      alert("Please connect your wallet first");
-      return;
+    // if (!isWalletConnected) {
+    //   alert("Please connect your wallet first");
+    //   return;
+    // }
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const network = await provider.getNetwork();
+      const chainId = Number(network.chainId);
+      
+      // Verify if connected to selected chain
+      const chainMap = {
+        'mainnet': 1,
+        'Polygon': 137,
+        'Arbitrum': 42161,
+        'Optimism': 10
+      };
+
+      if (chainMap[selectedChain] !== chainId) {
+        alert(`Please switch to ${selectedChain} network`);
+        return;
+      }
+
+      console.log("Creating contract with:", {
+        chain: selectedChain,
+        dex: selectedDex,
+        tokenInfo: data,
+        iconPreview,
+        bannerPreview
+      });
+    } catch (error) {
+      console.error("Contract creation failed:", error);
+      alert("Failed to create contract");
     }
-
-
-    console.log("Creating contract with:", {
-      chain: selectedChain,
-      dex: selectedDex,
-      tokenInfo: data,
-      iconPreview,
-      bannerPreview
-    });
   };
 
   // Keeping the original navigation layout
@@ -212,12 +307,23 @@ function App() {
         <input type="text" placeholder="Search..." className="search-bar" />
       </div>
       <div className="navbar-right">
-        <w3m-button
-          onClick={handleWalletConnect} 
-          balance="show"
-          disabled={!isValid}
-          className="w3m-button"
-        />
+        {isConnected ? (
+          <button 
+            className="eth-button"
+            onClick={disconnect}
+          >
+            {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Connected'}
+          </button>
+        ) : (
+          <button 
+            className="eth-button"
+            onClick={handleWalletConnect}
+            // disabled={!isValid}
+          >
+            Connect Wallet
+          </button>
+        )}
+      
       </div>
     </nav>
   );
@@ -225,7 +331,6 @@ function App() {
   return (
     <div className={isDarkMode ? 'dark-mode' : ''}>
       {renderNavbar()}
-
       <div className="container">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="header">
@@ -235,11 +340,11 @@ function App() {
 
           <div className="section-title">Choose a Chain</div>
           <div className="box" id="chain-box">
-            {['mainnet', 'Polygon', 'Arbitrum', 'Optimism'].map(chain => (
+            {['Ethereum', 'Polygon', 'Arbitrum', 'Optimism'].map(chain => (
               <div
                 key={chain}
                 className={`option ${selectedChain === chain ? 'selected' : ''}`}
-                onClick={() => setSelectedChain(chain)}
+                onClick={() => switchNetwork(chain)}
               >
                 {chain}
               </div>
@@ -366,7 +471,7 @@ function App() {
           <button 
             type="submit"
             className="create-contract-button"
-            disabled={!isWalletConnected || !isValid || !iconPreview}
+            disabled={!isWalletConnected || !isValid}
           >
             Create Contract
           </button>
